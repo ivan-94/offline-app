@@ -5,23 +5,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
+  <title>PWA example</title>
 </head>
 
 <body>
   <h1>Hello PWA</h1>
   <h2 class="timer"></h2>
+  <ul class="infos">
+  </ul>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js', {
-            scope: '/'
+        navigator.serviceWorker.register('./sw.js', {
+            scope: './'
           })
           .then((registration) => {
             console.log('serviceWorker 安装成功', registration)
           }).catch((err) => {
             console.log('serviceWorker 安装失败', err)
           })
+      })
+      navigator.serviceWorker.addEventListener('message', function (event) {
+        console.log('接收到消息', event.data)
       })
     }
   </script>

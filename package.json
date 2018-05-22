@@ -6,9 +6,10 @@
   "author": "gq-li <gq-li@mygzb.com>",
   "license": "MIT",
   "scripts": {
-    "serve": "http-server pwa-example -g -o"
+    "serve": "http-server ./ -g -o"
   },
   "dependencies": {
-    "http-server": "^0.11.1"
+    "http-server": "^0.11.1",
+    "zepto.js": "^1.1.6"
   }
 }

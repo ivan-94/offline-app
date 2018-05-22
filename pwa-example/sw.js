@@ -1,12 +1,15 @@
 var version = 'test-cache-v1'
+var self = this
 
 // 安装
 this.addEventListener('install', function (event) {
   // waitUntil 让service worker一致处于installing状态，直到promise resolve或者rejected
   // 如果promise rejected 将导致service worker 安装失败, 这个service-worker将被取消
   // 安装成功后， sw就会被激活
+  console.log('sw installing')
   event.waitUntil(caches.open(version).then(function (cache) {
     // 预缓存, sw 会立即预加载这些文件
+    console.log('sw installed')
     return cache.addAll([
       './index.html',
       './jquery.min.js',

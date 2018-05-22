@@ -136,3 +136,7 @@ url-join@^2.0.2:
 wordwrap@~0.0.2:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.3.tgz#a3d5da6cd5c0bc0008d37234bbaf1bed63059107"
+
+zepto.js@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/zepto.js/-/zepto.js-1.1.6.tgz#143d7f985317029b1170711216cf4fe4c089e68a"
