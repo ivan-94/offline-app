@@ -1,0 +1,14 @@
+{
+  "name": "offline-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "ssh://git@code.ejiahe.com:25522/gq-li/offline-app.git",
+  "author": "gq-li <gq-li@mygzb.com>",
+  "license": "MIT",
+  "scripts": {
+    "serve": "http-server pwa-example -g -o"
+  },
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}
