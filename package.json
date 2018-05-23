@@ -9,7 +9,20 @@
     "serve": "http-server ./ -g -o"
   },
   "dependencies": {
+    "history": "^4.7.2",
     "http-server": "^0.11.1",
+    "ionic": "^3.20.0",
+    "mobx": "^4.3.0",
+    "mobx-react": "^5.1.2",
+    "preact": "^8.2.9",
+    "preact-router": "^2.6.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-router": "^4.2.0",
+    "redux": "^4.0.0",
+    "vue": "^2.5.16",
+    "vue-router": "^3.0.1",
+    "vuex": "^3.0.1",
     "zepto.js": "^1.1.6"
   }
 }
