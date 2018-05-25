@@ -1,12 +1,93 @@
 # 离线化方案及对比
 
+> 从纯 Web 到纯 Native，之间有许多可能的点
+> -- 贺师俊
+
+![Web到Native](attachments/webtonative.png)
+
+图片截取自 [`黄玄的演讲slice`](https://huangxuan.me/sw-101-gdgdf)
+
 * 基于现有的浏览器机制
 * 基于传统 Hybrid 方案
 * 基于开源的 Native 方案
 
 ## 基于现有的浏览器机制
 
-HTML5 早期版本提供了`Application Cache`的缓存功能, 在`Service Worker`提出之后，`Application Cache`就从 Web 标准中移除了. 所以不在我们的讨论之列。
+### 基于 HTTP 的缓存机制
+
+HTTP 的缓存机制主要是在服务器端通过 HTTP 报头的方式进行控制。其工作流程如下:
+
+![http cache](attachments/httpcache.png)
+
+* `强缓存`：强缓存使用`Expires`和`Cache-Control`来设置. 这两个报头都用于设置一个绝对的过期时间。设置这两个报头的静态资源被加载时，浏览器会检查是否过期，如果未过期，浏览器会直接加载资源，不会向服务器发起请求. 这就是所谓的强缓存
+* 协商缓存：协商缓存主要使用以下报头来控制.
+  * `Last-Modified/If-Modified-Since`: 使用资源的更新时间来判断是否需要重新请求
+  * `Etag/If-None-Match`: 使用资源的`标签`匹配来判断是否要重新请求。`标签`一般是资源的唯一标志，比如内容的 Hash 码
+
+>  注意: html 入口文件不能加`强缓存`
+
+局限性:
+
+* 缓存不可靠性:
+  * 用户行为对缓存的影响(图片来自: [http 协商缓存 VS 强缓存](http://www.cnblogs.com/wonyun/p/5524617.html))
+    ![用户行为对缓存的影响](attachments/httpcache-behav.png)
+    即用户刷新会导致缓存无效。
+  * 缓存由浏览器控制, 无法控制其缓存清理逻辑.  比如在系统资源紧张的情况下,  缓存可以被清理掉
+* 对于强缓存的资源，如果未过期，除非用户强制刷新，会一直使用旧的版本。可能会导致程序错误(比如缓存了入口文件)。可以使用  添加查询字符串的方式, 让浏览器放弃缓存
+* 无法使用程序干预和控制缓存
+* 不支持离线
+
+### 浏览器缓存
+
+HTML5 早期版本提供了`Application Cache`的缓存功能, 在`Service Worker`提出之后，`Application Cache`就从 `Web 标准`中移除了, 在未来浏览器会停止支持(部分浏览器目前会警告)。不过我们可以了解一下他的缓存原理:
+
+![Application Cache](attachments/appcache.png)
+
+Appcahce 使用`manifest`文件来声明  应该缓存哪些资源, 典型  格式为:
+
+```bash
+# 版本号, 修改版本和触发更新
+# v1 - 2011-08-13
+# 声明要缓存的静态资源
+CACHE MANIFEST
+http://www.example.com/index.html
+http://www.example.com/header.png
+http://www.example.com/blah/blah
+
+# 声明绕过缓存, 或者资源不存在时是否可以通过网络请求
+# 可以使用通配符, * 表示除了CACHE声明的, 其他使用网络
+NETWORK:
+network.html
+
+# 回退: 声明当资源无法访问时, 浏览器使用该资源
+FALLBACK:
+/ fallback.html
+```
+
+优点
+
+*  兼容性好, 但是是废弃的 Web 标准,  未来可能成为历史包袱
+*  manifest 缓存和浏览器 HTTP 缓存是独立的, 不受其影响. 可以永久缓存
+
+缺点
+
+*  使用声明式  设计  声明缓存文件. 不可编程
+*  不同浏览器实现  有些 bug
+* API 存在较多设计缺陷. 比如
+  * 即使 manifest 文件丢失, 但 html 节点中的 manifest 属性没有删除, 缓存依然有效
+  * 全量  缓存, 一旦 manifest 更新, 所有文件将被重新缓存一遍
+  * 标记了 manifest 的 html 本身也被缓存，而且无法清除. 除非 manifest 自身  变动了
+  * 未缓存的资源在已缓存的页面不会被加载, 即使是在线
+  * 如果更新的资源中有一个资源更新失败了，将导致全部更新失败，将用回上一版本的缓存
+  * 没有缓存清理机制
+  * 一旦缓存出问题, 将极大影响用户体验
+
+> 具体的缺陷可以查看这些文章:
+>
+> * [Application Cache is a Douchebag](https://alistapart.com/article/application-cache-is-a-douchebag)
+> * [....](https://huangxuan.me/sw-101-gdgdf/#/12)
+
+### PWA
 
 目前 PWA(Progressive Web App)是最被推荐的应用模型。它基于`Service Worker`为 Web 应用提供编程式缓存和离线能力，PWA 不是一项技术，而是一套 Web 应用模式，旨在让我们 Web 应用能够更接近原生应用的使用体验。 简单说它包含下列功能:
 
@@ -45,7 +126,7 @@ HTML5 早期版本提供了`Application Cache`的缓存功能, 在`Service Worke
 缺点
 
 * 目前在 IOS 端(11.3)为实验性功能，引入 Webview 中还需要一些时间
-* 我们还是要做首屏优化，因为只有在首次加载之后才能被缓存。但缓存是永久的, 由程序来控制更新
+*  第一次打开没有预加载机制, 我们还是要做首屏优化，因为只有在首次加载之后才能被缓存。但缓存是永久的, 由程序来控制更新
 
 ## 传统 Hybrid 方案
 
@@ -70,13 +151,15 @@ HTML5 早期版本提供了`Application Cache`的缓存功能, 在`Service Worke
 
 > 优化:
 >
-> 1.  预加载:  客户端可以选择在合适的时机将  前端归档文件下载下来,  从而避免在点击应用式花时间  加载
+> 1.  预加载: 客户端可以选择在合适的时机将前端归档文件下载下来, 从而避免在点击应用式花时间加载
+> 2.  增加更新：由于前端应用使用自动的打包机制，为了避免缓存，文件一般命名为`name-[hash].ext`, 每次打包，如果文件发生变动都会生成一个新的文件
 
 优点
 
 * 前端实现简单( 支持 file 协议加载文件).
 * 永久缓存, 静态资源加载不需要经过网络, 可以可靠地渲染出页面
 * 支持所有客户端, 不存在兼容性问题
+*  自定义实现离线化, 相比 APP Cache 机制  有更高的自由度
 
 缺点
 
@@ -104,7 +187,7 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 支持 Web, IOS, Android 和 Windows. 其中主要官方支持 IOS, Android, 资源较多。而 Web 和 Windows 由社区支持
 
 社区其他类似框架对比
-|  指标 |React Native| Weex | NativeScript | Xamarin |Flutter|
+| 指标 |React Native| Weex | NativeScript | Xamarin |Flutter|
 |------|---|---|---|---|--|
 |语言 | JavaScript |Javascript| Javascript|C#|Dart|
 |框架 | React | 框架无关/默认为 Vue | Angular/Vue| - | - |
@@ -124,7 +207,7 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 
 缺点
 
-* 提高了协作成本。原生开发和前端开发需要更多配合。不管是原生开发还是前端开发都需要一些交叉知识
+* 提高了协作成本。原生开发和前端开发需要更多配合。不管是原生开发还是前端开发都需要一些交叉知识, 有一定学习成本
 * 对于一些自定义的原生组件/插件，需要原生开发配合开发
 * 潜在成本。Native 方案还处于发展阶段，一些潜在成本是需要考虑的。一是更新迭代快，升级成本稍高(这里包括核心库，以及因为核心库升级而滞后的第三方库)；二是开发过程中的坑。
 * 不是完美支持所有平台, 目前只推荐在 IOS 和 Android。还是需要对平台进行适配。暂时无法做到“编写一次，在所有平台运行”
@@ -135,8 +218,19 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 
 以下`Native Hybrid`简称`NH`, `Webview Hybrid` 简称 WH.
 
-| 首次加载 | 性能   | 开发效率 | 代码复用度 | 引入成本 | 潜在成本 | 热更新支持 |  平台兼容性 |  向下兼容性                    |
-| -------- | ------ | -------- | ---------- | -------- | -------- | ---------- | ----------- | ------------------------------ |
-| NH       | NH     | WH/PWA   | WH/PWA     | NH       | NH       | PWA        | PWA/WH      | PWA(无成本)                    |
-| WH       | WH/PWA | NH       | NH         | WH       | WH/PWA   | WH         | NH          | WH(旧版本需要提供网页加载方式) |
-| PWA      |        |          |            | PWA      |          | NH         |             | NH(不兼容)                     |
+| 首次加载 | 性能   | 开发效率 | 代码复用度 | 引入成本 | 潜在成本 | 热更新支持 | 平台兼容性 | 向下兼容性                     |
+| -------- | ------ | -------- | ---------- | -------- | -------- | ---------- | ---------- | ------------------------------ |
+| NH       | NH     | WH/PWA   | WH/PWA     | NH       | NH       | PWA        | WH         | PWA(无成本)                    |
+| WH       | WH/PWA | NH       | NH         | WH       | WH/PWA   | WH         | PWA        | WH(旧版本需要提供网页加载方式) |
+| PWA      |        |          |            | PWA      |          | NH         | NH         | NH(不兼容)                     |
+
+## 参考文献
+
+* [浏览器的缓存机制](http://coderlt.coding.me/2016/11/21/web-cache/)
+* [http 协商缓存 VS 强缓存](http://www.cnblogs.com/wonyun/p/5524617.html)
+* [移动 H5 首屏秒开优化方案探讨](https://blog.cnbang.net/tech/3477/)
+* [MDN HTTP 缓存](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ)
+* [缓存策略](http://imweb.io/topic/55c6f9bac222e3af6ce235b9)
+* [为什么 app cache 没有得到大规模应用？它有哪些硬伤吗？](https://www.zhihu.com/question/29876535)
+* [聊一聊 H5 应用缓存-Manifest](http://louiszhai.github.io/2016/11/25/manifest/)
+* [下一代 Web 应用模型 —— Progressive Web App](https://huangxuan.me/2017/02/09/nextgen-web-pwa/)
