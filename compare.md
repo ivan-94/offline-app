@@ -286,6 +286,7 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 支持 Web, IOS, Android 和 Windows. 其中主要官方支持 IOS, Android, 资源较多。而 Web 和 Windows 由社区支持
 
 社区其他类似框架对比
+
 | 指标 |React Native| Weex | NativeScript | Xamarin |Flutter|
 |------|---|---|---|---|--|
 |语言 | JavaScript |Javascript| Javascript|C#|Dart|
