@@ -6,4 +6,4 @@
 
 * [现状，瓶颈分析](problems.md)
 * [预选方案对比和分析](compare.md)
-* [ 持续的优化: 优化清单](optmization.md)
+* [持续的优化: 优化清单](optmization.md)

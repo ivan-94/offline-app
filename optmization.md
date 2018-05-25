@@ -8,9 +8,9 @@
 * App Shell
 * 体积优化
 * 惰性加载
-* 公共资源包提取. 公共资源包可以打包进客户端中. 客户端拦截返回这些资源
+* 公共资源包提取. 公共资源包可以打包进客户端中. 客户端拦截返回这些资源
 * 屏蔽webview HTML 内容自动识别
-* 设置favicon.ico. 浏览器始终会加载这个文件, 确保它存在并设置较长的缓存时间. 避免浪费连接资源
+* 设置favicon.ico. 浏览器始终会加载这个文件, 确保它存在并设置较长的缓存时间. 避免浪费连接资源
 
 ## 前端运行时优化
 
@@ -24,7 +24,7 @@
 
 ## 客户端优化
 
-* 预加载webview, 参考[WebView性能、体验分析与优化](https://tech.meituan.com/WebViewPerf.html)
+* 预加载webview, 参考[WebView性能、体验分析与优化](https://tech.meituan.com/WebViewPerf.html)
 
 ## 开发和协作规范
 
