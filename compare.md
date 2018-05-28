@@ -347,3 +347,4 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 * [缓存策略](http://imweb.io/topic/55c6f9bac222e3af6ce235b9)
 * [为什么 app cache 没有得到大规模应用？它有哪些硬伤吗？](https://www.zhihu.com/question/29876535)
 * [聊一聊 H5 应用缓存-Manifest](http://louiszhai.github.io/2016/11/25/manifest/)
+* [CodePush](https://microsoft.github.io/code-push/)
