@@ -1,21 +1,5 @@
 # 离线化方案及对比
 
-<!-- TOC -->
-
-- [离线化方案及对比](#离线化方案及对比)
-    - [1. 基于现有的浏览器机制](#1-基于现有的浏览器机制)
-        - [1.1 基于 HTTP 的缓存机制](#11-基于-http-的缓存机制)
-        - [1.2 Application Cache](#12-application-cache)
-        - [1.3 PWA](#13-pwa)
-        - [1.4 工作宝向下兼容性](#14-工作宝向下兼容性)
-    - [2. 传统 Hybrid 方案](#2-传统-hybrid-方案)
-        - [2.1 file协议方案(Cordova原理)](#21-file协议方案cordova原理)
-        - [2.2 Webview拦截方案](#22-webview拦截方案)
-    - [3. 基于开源的 Native 方案](#3-基于开源的-native-方案)
-    - [4. 方案对比](#4-方案对比)
-    - [5. 参考文献/扩展阅读](#5-参考文献扩展阅读)
-
-<!-- /TOC -->
 
 <br/>
 
@@ -116,6 +100,8 @@ FALLBACK:
 * 兼容性好, 但是是废弃的 Web 标准, 未来可能成为历史包袱
 * manifest 缓存和浏览器 HTTP 缓存是独立的, 不受其影响. 可以永久缓存
 
+<br/>
+
 **缺点**
 
 * 使用声明式设计声明缓存文件. 不可编程, 比如你无法条件性地缓存. 如果同时支持 PC 端移动端，也会将所有不需要的资源缓存下载
@@ -170,24 +156,31 @@ FALLBACK:
     1.  全站缓存，直接在`install`事件中，将所有静态资源预缓存下来。这种方式可以保证更好的离线效果
     2.  渐进式缓存，在`fetch`事件中，边请求变缓存。对于非核心文件可以使用这种方式
 
+<br/>
+
 **兼容性**
 
 1.  Chrome 44 工作宝 Android 端和 PC 端都是 Chrome 内核，可以完美支持
 2.  桌面端 Safari 11.1
 3.  IOS Safari 11.3 目前还是实验性功能，Webview 尚未开放（新时代 IE 浏览器）
 
+<br/>
+
 **优点**
 
 * 架构侵入性低，正如其名，可以渐进式增强。不影响现有的应用的开发和兼容。也就是说他只是我们应用的“附加功能”. 方便旧应用的迁入。
 * 引入成本低，不用惊动三端。完全由前端控制
 * 开发和调试方便
-* 编程式地控制应用缓存
+* 编程式地控制应用缓存, 可以实现更细粒度的缓存定制
+
+<br/>
 
 **缺点**
 
 * 目前在 IOS 端(11.3)为实验性功能，引入 Webview 中还需要一些时间
 * 第一次打开没有预加载机制, 我们还是要做首屏优化，因为只有在首次加载之后才能被缓存。但缓存是永久的, 由程序来控制更新
 
+<br/>
 
 ### 1.4 工作宝向下兼容性
 
@@ -214,8 +207,11 @@ FALLBACK:
 1.  打开应用，客户端会先检查本地是否存在该应用的`归档`, 如果存在则 根据应用的`描述文件`使用`file:///`协议加载入口文件
 2.  如果不存在，则向`应用管理系统`获取应用归档。
 3.  在加载应用的同时，客户端会向应用管理系统检查是否有更新。如果有更新则下载最新的归档, 按照一定的策略，激活新的应用：
-    1.  获取更新后强制更新应用, 这种策略使用**break change**的版本. 即服务端接口有重大变化，并不再向下兼容. 为了判断是**break change**还是**一般性**更新，我们可能会采用`语义化的版本号`, 或者特定的指令来通知客户端
+
+    1.  获取更新后强制更新应用, 这种策略使用**break change**的版本. 即服务端接口有重大变化，并不再向下兼容. 为了判断是**break change**还是**一般性**更新，我们可能会采用`语义化的版本号`, 或者特定的指令来通知客户端.<br/>
+    但是强制应用更新体验是非常不好的，所以要求后端接口要保持向下兼容或者版本化
     2.  在应用重新打开时激活, 适用于**一般性**更新
+
 4.  页面加载后，前端页面通过`jssdk.getCode()`向客户端获取`Code`，并通过`Code`和`应用后端`交换`Token`。后续以这个`Token`和服务端交互
 5.  鉴权完毕后，就可以开始业务交互了
 
@@ -253,13 +249,14 @@ FALLBACK:
 * 需要一个可用的开发规范和工具, 以提升开发和调试效率
 * 需要考虑工作宝向下兼容问题, 也就说为了兼容低版本工作宝前端除了要提供离线归档文件, 依旧提供在线版本
 
-
-<br/>
 <br/>
 
 **工作宝向下兼容性**
 
 离线版无法向下兼容，对于低版本客户端可以回退到在线版本。
+
+<br/>
+<br/>
 
 ### 2.2 Webview拦截方案
 
@@ -286,6 +283,10 @@ FALLBACK:
 <br/>
 <br/>
 
+### 更多
+
+* [微信小程序](https://cloud.tencent.com/developer/article/1029663)
+*
 
 ## 3. 基于开源的 Native 方案
 
@@ -323,6 +324,8 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 |支持|Facebook| Ali | | Microsoft | Google|
 |成熟平台| IOS/Android/Web| IOS/Android/Web|IOS/Android| IOS/Android/Window| IOS/Android|
 
+<br/>
+
 **优点**
 
 * 进一步缩短了和原生开发的性能差距, 更好的手势支持, 支持高性能的动画
@@ -330,6 +333,8 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 * 支持远程热更新
 * 社区有丰富的插件和库, 文档成熟
 * 大厂 APP 大量实践
+
+<br/>
 
 **缺点**
 
@@ -339,6 +344,8 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 * 不是完美支持所有平台, 目前只推荐在 IOS 和 Android。还是需要对平台进行适配。暂时无法做到“编写一次，在所有平台运行”
 * 潜在的风险。无法预料未来的 App Store 的审核变动. 不过有大厂打头阵，QQ，FaceBook，Ali 等大型 APP 都有用到 React Native
 * 集成难度高于前面两种方案, 不向下兼容
+
+<br/>
 
 **工作宝向下兼容性**
 
@@ -363,17 +370,23 @@ HTML5 页面的性能和用户体验和原生程序的还有一定的差距, 主
 <br/>
 
 
+
 ## 5. 参考文献/扩展阅读
 
-* [下一代 Web 应用模型 —— Progressive Web App](https://huangxuan.me/2017/02/09/nextgen-web-pwa/)
-* [转转 hybrid app web 静态资源离线系统实践](http://zzfe.org/#/detail/5a5376c970aaa1172d26442b)
-* [手机 QQ Hybrid APP 优化新思路](http://blog.xiayf.cn/assets/uploads/files/AK-hybrid-app.pdf)
-* [美团大众点评Hybrid 化建设](https://mp.weixin.qq.com/s/rNGD6SotKoO8frmxIU8-xw)
-* [浏览器的缓存机制](http://coderlt.coding.me/2016/11/21/web-cache/)
-* [http 协商缓存 VS 强缓存](http://www.cnblogs.com/wonyun/p/5524617.html)
-* [移动 H5 首屏秒开优化方案探讨](https://blog.cnbang.net/tech/3477/)
-* [MDN HTTP 缓存](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ)
-* [缓存策略](http://imweb.io/topic/55c6f9bac222e3af6ce235b9)
-* [为什么 app cache 没有得到大规模应用？它有哪些硬伤吗？](https://www.zhihu.com/question/29876535)
-* [聊一聊 H5 应用缓存-Manifest](http://louiszhai.github.io/2016/11/25/manifest/)
-* [CodePush](https://microsoft.github.io/code-push/)
+* 浏览器缓存机制
+  * [下一代 Web 应用模型 —— Progressive Web App](https://huangxuan.me/2017/02/09/nextgen-web-pwa/)
+  * [浏览器的缓存机制](http://coderlt.coding.me/2016/11/21/web-cache/)
+  * [MDN HTTP 缓存](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ)
+  * [缓存策略](http://imweb.io/topic/55c6f9bac222e3af6ce235b9)
+  * [聊一聊 H5 应用缓存-Manifest](http://louiszhai.github.io/2016/11/25/manifest/)
+  * [http 协商缓存 VS 强缓存](http://www.cnblogs.com/wonyun/p/5524617.html)
+  * [为什么 app cache 没有得到大规模应用？它有哪些硬伤吗？](https://www.zhihu.com/question/29876535)
+
+* Webview Hybrid
+  * [转转 hybrid app web 静态资源离线系统实践](http://zzfe.org/#/detail/5a5376c970aaa1172d26442b)
+  * [手机 QQ Hybrid APP 优化新思路](http://blog.xiayf.cn/assets/uploads/files/AK-hybrid-app.pdf)
+  * [美团大众点评Hybrid 化建设](https://mp.weixin.qq.com/s/rNGD6SotKoO8frmxIU8-xw)
+  * [Hybrid技术在Flyme的应用实践](https://pic.huodongjia.com/ganhuodocs/2017-11-10/1510284995.53.pdf)
+  * [CodePush](https://microsoft.github.io/code-push/)
+  * [Hybrid App 跨平台热更新方案实践 附带源码](https://juejin.im/post/594ab464fe88c2006aa64203)
+  * [移动 H5 首屏秒开优化方案探讨](https://blog.cnbang.net/tech/3477/)
